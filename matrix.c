@@ -14,7 +14,7 @@ t_matrix *create_matrix(int r, int c)
         free(new);
         return NULL;
     }
-    if ( fill_array(new->content, r, c) == -1)
+    if ( allocate_col(new->content, r, c) == -1)
     {
         free(new->content);
         free(new);
@@ -22,7 +22,7 @@ t_matrix *create_matrix(int r, int c)
     }
     return new;
 }
-float fill_array(float **arr, int row, int col)
+float allocate_col(float **arr, int row, int col)
 {
     int i = 0;
 

@@ -14,4 +14,9 @@ typedef struct s_matrix
 
 } t_matrix;
 
+t_matrix *create_matrix(int r, int c);
+float fallocate_col(float **arr, int row, int col);
+void free_matrix(t_matrix *mat);
+
+
 #endif
