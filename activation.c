@@ -1,7 +1,5 @@
 #include "neural.h"
 
-#include "neural.h"
-#include <math.h>
 
 // ----------------- Sigmoid -----------------
 t_matrix *matrix_sigmoid(t_matrix *mat)
