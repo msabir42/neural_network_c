@@ -24,15 +24,15 @@ t_matrix *create_matrix(int r, int c)
 }
 float allocate_col(float **arr, int row, int col)
 {
-    int i = 0;
+    int i ;
 
     for (i = 0; i < row; i++)
     {
         arr[i] = malloc(sizeof(float) * col);
         if (!arr[i])
         {
-            int j = 0;
-            for (j; j < i; j++)
+            int j;
+            for (j = 0; j < i; j++)
                 free(arr[j]);
             return -1;
         }
@@ -43,8 +43,8 @@ float allocate_col(float **arr, int row, int col)
 void free_matrix(t_matrix *mat) 
 {
     int i;
-    i = 0;
-    for (i; i < mat->row; i++)
+    
+    for (i = 0; i < mat->row; i++)
     {
         free(mat->content[i]);
     }

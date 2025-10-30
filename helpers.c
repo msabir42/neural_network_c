@@ -2,19 +2,21 @@
 
 float* flatten(t_matrix* mat)
 {
+    if (!mat)
+        return NULL;
+
     int size = mat->row * mat->col;
-    int count = 0;
-    float* image = malloc(sizeof(float) * size );
-     int  i = 0;
-    while (i < mat->row)
+    float *image = malloc(sizeof(float) * size);
+    if (!image)
+        return NULL;
+
+    int index = 0;
+    for (int i = 0; i < mat->row; i++)
     {
-        int j = 0;
-        while(j < mat->col)
+        for (int j = 0; j < mat->col; j++)
         {
-            image[count++] = mat->content[i][j];
-            j++;
+            image[index++] = mat->content[i][j];
         }
-        i++;
     }
     return image;
 }

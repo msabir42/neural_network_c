@@ -24,14 +24,15 @@ typedef struct s_layer
     t_matrix* output;
 } t_layer;
 
-
 typedef struct s_neural
 {
     t_layer* hidden;
     t_layer* output;
 } t_neural;
 
+// Neural network functions
 void init_layer(t_layer* layer,int input_size,int output_size);
+t_matrix *forward_propagation(t_layer *layer, t_matrix *input);  
 
 // Matrix operations
 t_matrix *create_matrix(int r, int c);
