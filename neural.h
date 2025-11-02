@@ -32,7 +32,8 @@ typedef struct s_neural
 
 // Neural network functions
 void init_layer(t_layer* layer,int input_size,int output_size);
-t_matrix *forward_propagation(t_layer *layer, t_matrix *input);  
+t_matrix *forward_propagation(t_layer *layer, t_matrix *input);
+t_matrix *forward_propagation_last(t_layer *layer, t_matrix *input);
 
 // Matrix operations
 t_matrix *create_matrix(int r, int c);
@@ -75,8 +76,14 @@ float **sigmoid_op(t_matrix *mat);
 float **tanh_op(t_matrix *mat);
 float **relu_op(t_matrix *mat);
 float **leaky_relu_op(t_matrix *mat, float alpha);
+t_matrix *matrix_softmax(t_matrix *mat);
+float **softmax_op(t_matrix *mat);
+
 
 // File parsing
 t_matrix **fill_matrix(char* file);
+
+t_matrix *read_one_image(int fd, int rows, int cols);
+
 
 #endif

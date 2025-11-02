@@ -32,6 +32,43 @@ float **sigmoid_op(t_matrix *mat)
     return new;
 }
 
+
+t_matrix *matrix_softmax(t_matrix *mat)
+{
+    t_matrix *out = create_matrix(mat->row, mat->col);
+    out->content = softmax_op(mat);
+    return out;
+}
+
+float **softmax_op(t_matrix *mat)
+{
+    int rows = mat->row;
+    float **new = malloc(sizeof(float*) * rows);
+    for (int i = 0; i < rows; i++)
+        new[i] = malloc(sizeof(float) * 1);
+
+    // 1. Find max value for numerical stability
+    float max_val = mat->content[0][0];
+    for (int i = 1; i < rows; i++)
+        if (mat->content[i][0] > max_val)
+            max_val = mat->content[i][0];
+
+    // 2. Exponentiate and sum
+    float sum = 0.0f;
+    for (int i = 0; i < rows; i++)
+    {
+        new[i][0] = expf(mat->content[i][0] - max_val);
+        sum += new[i][0];
+    }
+
+    // 3. Normalize
+    for (int i = 0; i < rows; i++)
+        new[i][0] /= sum;
+
+    return new;
+}
+
+
 // ----------------- Tanh -----------------
 t_matrix *matrix_tanh(t_matrix *mat)
 {
@@ -63,8 +100,6 @@ float **tanh_op(t_matrix *mat)
     return new;
 }
 
-#include "neural.h"
-#include <math.h>
 
 // ----------------- ReLU (Rectified Linear Unit) -----------------
 // Element-wise operation: replaces negative values with 0

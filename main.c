@@ -1,101 +1,93 @@
 #include "neural.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
     if (argc != 2)
     {
-        printf("Usage: %s <t10k-images.idx3-ubyte>\n", argv[0]);
+        printf("Usage: %s <mnist-images-file>\n", argv[0]);
         return 1;
     }
 
     char *file = argv[1];
 
-    // 1. Load MNIST images
-    t_matrix **images = fill_matrix(file);
-    if (!images)
+    int fd = open(file, O_RDONLY);
+    if (fd < 0)
     {
-        printf("Error loading MNIST file.\n");
+        perror("open");
         return 1;
     }
 
-    int total_data = 10000; // t10k = 10k images
+    unsigned char header[16];
+    if (read(fd, header, 16) != 16)
+    {
+        printf("Error reading header\n");
+        close(fd);
+        return 1;
+    }
 
-    // 2. Create layers
-    t_layer hidden;
-    t_layer output;
+    int magic = (header[0] << 24) | (header[1] << 16) |
+                (header[2] << 8) | header[3];
+    int num_images = (header[4] << 24) | (header[5] << 16) |
+                     (header[6] << 8) | header[7];
+    int rows = (header[8] << 24) | (header[9] << 16) |
+               (header[10] << 8) | header[11];
+    int cols = (header[12] << 24) | (header[13] << 16) |
+               (header[14] << 8) | header[15];
+
+    printf("Magic: %d\n", magic);
+    printf("Images: %d\n", num_images);
+    printf("Rows: %d  Cols: %d\n", rows, cols);
+
+    // Initialize layers
+    t_layer hidden, output;
     init_layer(&hidden, 784, 128);
     init_layer(&output, 128, 10);
 
-    // 3. Flatten all images (allocate on heap)
-    float **flatted = malloc(sizeof(float*) * total_data);
-    if (!flatted)
-    {
-        printf("Malloc error\n");
-        return 1;
-    }
-
-    for (int i = 0; i < total_data; i++)
-    {
-        if (images[i] != NULL)
-            flatted[i] = flatten(images[i]);
-        else
-            flatted[i] = NULL;
-    }
-
-    // 4. Create a reusable input matrix
+    // Matrix for image input
     t_matrix *input_matrix = create_matrix(784, 1);
 
-    //int correct_count = 0; // optional, for accuracy if labels available
-
-    // 5. Process all images
-    for (int img_idx = 0; img_idx < total_data; img_idx++)
+    // Read 10 images
+    for (int i = 0; i < 10; i++)
     {
-        if (!flatted[img_idx])
-            continue;
+        t_matrix *image = read_one_image(fd, rows, cols);
+        if (!image)
+        {
+            printf("Reached end of file at image %d\n", i);
+            break;
+        }
 
-        // Copy flattened image into input matrix
-        for (int j = 0; j < 784; j++)
-            input_matrix->content[j][0] = flatted[img_idx][j];
+        float *flat = flatten(image);
 
-        // Forward propagation
-        t_matrix *hidden_out  = forward_propagation(&hidden, input_matrix);
-        t_matrix *output_out = forward_propagation(&output, hidden_out);
+        // Copy flattened data into input vector
+        for (int p = 0; p < 784; p++)
+            input_matrix->content[p][0] = flat[p];
 
-        // Determine predicted digit (argmax)
-        int predicted = 0;
-        float max_val = output_out->content[0][0];
+        t_matrix *hidden_out = forward_propagation(&hidden, input_matrix);
+        t_matrix *output_out = forward_propagation_last(&output, hidden_out);
+
+        // Print NN outputs
+        for (int k = 0; k < 10; k++)
+            printf("%f ", output_out->content[k][0]);
+        printf("\n");
+
+        // Find predicted digit
+        int best = 0;
+        float best_val = output_out->content[0][0];
         for (int k = 1; k < 10; k++)
         {
-            if (output_out->content[k][0] > max_val)
+            if (output_out->content[k][0] > best_val)
             {
-                max_val = output_out->content[k][0];
-                predicted = k;
+                best_val = output_out->content[k][0];
+                best = k;
             }
         }
 
-        // Print first 5 predictions as example
-        if (img_idx < 100)
-            printf("Image %d predicted: %d\n", img_idx, predicted);
+        printf("Image %d predicted: %d\n", i, best);
 
-        // Free temporary matrices
-        free_matrix(hidden_out);
-        free_matrix(output_out);
+        free(flat);
+        free_matrix(image);
     }
 
-    // 6. Cleanup
-    free_matrix(input_matrix);
-
-    for (int i = 0; i < total_data; i++)
-    {
-        if (images[i])
-            free_matrix(images[i]);
-        if (flatted[i])
-            free(flatted[i]);
-    }
-    free(images);
-    free(flatted);
-
+    close(fd);
     return 0;
 }

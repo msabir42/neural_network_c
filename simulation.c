@@ -3,11 +3,16 @@
 
 t_matrix *forward_propagation(t_layer *layer, t_matrix *input)
 {
-    t_matrix* weight = layer->weights;
-    t_matrix* bias = layer->bias;
-    t_matrix* output = layer->output;
-    t_matrix* tmp = matrix_multiplication(weight,input);
-    tmp = matrix_addition(tmp,bias);
-    output = matrix_sigmoid(tmp);
-    return output;
+    t_matrix* z = matrix_multiplication(layer->weights, input);
+    t_matrix* z_bias = matrix_addition(z, layer->bias);
+    t_matrix* out = matrix_sigmoid(z_bias);  // hidden layers use sigmoid
+    return out;
+}
+
+t_matrix *forward_propagation_last(t_layer *layer, t_matrix *input)
+{
+    t_matrix* z = matrix_multiplication(layer->weights, input);
+    t_matrix* z_bias = matrix_addition(z, layer->bias);
+    t_matrix* out = matrix_softmax(z_bias);  // output layer uses softmax
+    return out;
 }
